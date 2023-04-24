@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    command: python app/main.py
+    tty: true
+    volumes:
+      - ./backend:/app/:cached
+      - ./.docker/.ipython:/root/.ipython:cached
+    environment:
+      PYTHONPATH: .
+      DATABASE_URL: 'postgresql://postgres:password@postgres:5432/postgres'
+    ports:
+      - "8000:8000"
+    depends_on:
+      - "postgres"
+
+  postgres:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data:cached
+
+volumes:
+  db-data:
