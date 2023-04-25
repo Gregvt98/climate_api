@@ -29,3 +29,13 @@ class Post(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="posts")
+
+class SentimentAnalysis(Base):
+    __tablename__ = "sentiment_analysis"
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String)
+    score = Column(Float)
+    ratio = Column(Float)
+    post_id = Column(Integer, ForeignKey("posts.id"))
+    post = relationship("Post", back_populates="sentiment_analysis")
