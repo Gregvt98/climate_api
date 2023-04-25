@@ -22,13 +22,14 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     content = Column(String)
-    #latitude = Column(Float)
-    #longitude = Column(Float)
+    latitude = Column(Float)
+    longitude = Column(Float)
     image_url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="posts")
+    sentiment_analysis = relationship("SentimentAnalysis", back_populates="post")
 
 class SentimentAnalysis(Base):
     __tablename__ = "sentiment_analysis"
