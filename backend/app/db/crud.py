@@ -91,10 +91,15 @@ def get_posts(
 
 def create_post(db: Session, post: schemas.PostCreate, user_id: int): #need to pass user id as well
     #db_user = get_user(db, user_id) #get user with id
+
+    #get post sentiment here
+
     db_post = models.Post(
         title=post.title,
         content=post.content,
         user_id=user_id,
+        longitude=post.longitude,
+        latitude=post.latitude,
     )
     db.add(db_post)
     db.commit()

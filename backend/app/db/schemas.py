@@ -57,6 +57,8 @@ class PostOut(PostBase):
 
 
 class PostCreate(PostBase):
+    latitude: float
+    longitude: float
     title: t.Optional[str] = None
     content: t.Optional[str] = None
     user_id: t.Optional[int] = None
@@ -64,9 +66,21 @@ class PostCreate(PostBase):
     class Config:
         orm_mode = True
 
+class SentimentAnalysisBase(BaseModel):
+    post_id: int
+
+class SentimentAnalysisCreate(SentimentAnalysisBase):
+    type = str
+    score = float
+    ratio = float
+
+    class Config:
+        orm_mode = True
 
 class PostEdit(PostBase):
+    title: t.Optional[str] = None
     content: t.Optional[str] = None
+    sentiment_analysis: t.Optional[SentimentAnalysisCreate] = None
 
     class Config:
         orm_mode = True
