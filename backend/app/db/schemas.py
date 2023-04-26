@@ -67,12 +67,16 @@ class PostCreate(PostBase):
         orm_mode = True
 
 class SentimentAnalysisBase(BaseModel):
-    post_id: int
+    pass
 
 class SentimentAnalysisCreate(SentimentAnalysisBase):
-    type = str
-    score = float
-    ratio = float
+    type: str
+    score: float
+    ratio: float
+
+
+class SentimentAnalysisOut(SentimentAnalysisBase):
+    id: int
 
     class Config:
         orm_mode = True
@@ -80,7 +84,6 @@ class SentimentAnalysisCreate(SentimentAnalysisBase):
 class PostEdit(PostBase):
     title: t.Optional[str] = None
     content: t.Optional[str] = None
-    sentiment_analysis: t.Optional[SentimentAnalysisCreate] = None
 
     class Config:
         orm_mode = True
