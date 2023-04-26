@@ -5,6 +5,7 @@ import uvicorn
 from app.api.api_v1.routers.users import users_router
 from app.api.api_v1.routers.auth import auth_router
 from app.api.api_v1.routers.posts import posts_router
+from app.api.api_v1.routers.analysis import analysis_router
 from app.core import config
 from app.db.session import SessionLocal
 from app.core.auth import get_current_active_user
@@ -64,6 +65,12 @@ app.include_router(
     posts_router,
     prefix="/api/v1",
     tags=["posts"],
+    #dependencies=[Depends(get_current_active_user)] #No bearer token required
+)
+app.include_router(
+    analysis_router,
+    prefix="/api/v1",
+    tags=["analysis"],
     #dependencies=[Depends(get_current_active_user)] #No bearer token required
 )
 
