@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import typing as t
+import requests
 
 from . import models, schemas
 from app.core.security import get_password_hash
@@ -92,8 +93,6 @@ def get_posts(
 def create_post(db: Session, post: schemas.PostCreate, user_id: int): #need to pass user id as well
     #db_user = get_user(db, user_id) #get user with id
 
-    #get post sentiment here
-
     db_post = models.Post(
         title=post.title,
         content=post.content,
@@ -131,3 +130,31 @@ def edit_post(
     db.commit()
     db.refresh(db_post)
     return db_post
+
+def get_sentiment(post_id, text):
+    url = "https://twinword-sentiment-analysis.p.rapidapi.com/analyze/"
+    querystring = {"text": text}
+    headers = {
+        "content-type": "application/octet-stream",
+        "X-RapidAPI-Key": "e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6", # 9000 free requests per month
+        "X-RapidAPI-Host": "twinword-sentiment-analysis.p.rapidapi.com"
+    }
+    response = requests.get(url, headers=headers, params=querystring)
+    json_response = response.json()
+    #print(response.json())
+    return json_response
+
+def create_sentiment_analysis(db: Session,  post_id: int):
+    db_post = get_post(db, post_id)
+    res = get_sentiment(db_post.id, db_post.content)
+    print("sentiment_analysis: ", res)
+    db_sentiment_analysis = models.SentimentAnalysis(
+        type=res["type"],
+        score=res["score"],
+        ratio=res["ratio"],
+        post_id=db_post.id,
+    )
+    db.add(db_sentiment_analysis)
+    db.commit()
+    db.refresh(db_sentiment_analysis)
+    return db_sentiment_analysis
