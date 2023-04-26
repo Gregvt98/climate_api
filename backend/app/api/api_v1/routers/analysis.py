@@ -19,7 +19,7 @@ analysis_router = r = APIRouter()
 async def root():
     return {"message": "Hello from analysis"}
 
-@r.post("/analyze/{post_id}", response_model=SentimentAnalysisOut, response_model_exclude_none=True)
+@r.post("/analysis/{post_id}", response_model=SentimentAnalysisOut, response_model_exclude_none=True)
 async def sentiment_analysis_create(
     post_id: int,
     db=Depends(get_db)
