@@ -1,6 +1,6 @@
 #copy of users.py
 
-from fastapi import APIRouter, Request, Depends, Response, encoders
+from fastapi import APIRouter, Request, Depends, Response, encoders, BackgroundTasks
 import typing as t
 
 from app.db.session import get_db
@@ -11,6 +11,7 @@ from app.db.crud import (
     create_post,
     delete_post,
     edit_post,
+    create_sentiment_analysis
 )
 from app.db.schemas import PostCreate, PostEdit, Post, PostOut
 from app.core.auth import get_current_active_user, get_current_active_superuser
@@ -70,13 +71,17 @@ async def post_details(
 async def post_create(
     request: Request,
     post: PostCreate,
+    background_tasks: BackgroundTasks,
     db=Depends(get_db),
     current_user=Depends(get_current_active_user),
 ):
     """
     Create a new post
     """
-    return create_post(db, post, current_user.id)
+    created_post = create_post(db, post, current_user.id)
+    #background task to analyze sentiment after it's created
+    background_tasks.add_task(create_sentiment_analysis, db, created_post.id)
+    return created_post
 
 
 @r.put(
