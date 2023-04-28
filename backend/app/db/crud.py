@@ -6,7 +6,6 @@ import requests
 from . import models, schemas
 from app.core.security import get_password_hash
 
-
 def get_user(db: Session, user_id: int):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
@@ -86,9 +85,15 @@ def get_user_posts(db: Session, user_id: int):
 
 
 def get_posts(
-    db: Session, skip: int = 0, limit: int = 100
+    db: Session, skip: int = 0, limit: int = 100, q: str = None
 ) -> t.List[schemas.PostOut]:
-    return db.query(models.Post).offset(skip).limit(limit).all()
+    if q is None:
+        return db.query(models.Post).offset(skip).limit(limit).all()
+    elif q == "positive" or q == "negative":
+        ### if q is not empty, filter posts on sentiment positivity/negativity
+        return db.query(models.Post).join(models.SentimentAnalysis).filter(models.SentimentAnalysis.type == q).offset(skip).limit(limit).all()
+    else:
+        raise HTTPException(status_code=404, detail="q parameter must be none, positive, or negative")
 
 def create_post(db: Session, post: schemas.PostCreate, user_id: int): #need to pass user id as well
     #db_user = get_user(db, user_id) #get user with id
@@ -136,8 +141,8 @@ def get_sentiment(post_id, text):
     querystring = {"text": text}
     headers = {
         "content-type": "application/octet-stream",
-        "X-RapidAPI-Key": "e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6", # 9000 free requests per month
-        "X-RapidAPI-Host": "twinword-sentiment-analysis.p.rapidapi.com"
+        "X-RapidAPI-Key": "e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6", #hide key (use config.SA_API) of sentiment analysis API, 9000 free requests per month
+        "X-RapidAPI-Host": "twinword-sentiment-analysis.p.rapidapi.com",
     }
     response = requests.get(url, headers=headers, params=querystring)
     json_response = response.json()
@@ -146,7 +151,10 @@ def get_sentiment(post_id, text):
 
 def create_sentiment_analysis(db: Session,  post_id: int):
     db_post = get_post(db, post_id)
-    res = get_sentiment(db_post.id, db_post.content)
+    if db_post.content:
+        res = get_sentiment(db_post.id, db_post.content)
+    elif db_post.title:
+        res = get_sentiment(db_post.id, db_post.title)
     print("sentiment_analysis: ", res)
     db_sentiment_analysis = models.SentimentAnalysis(
         type=res["type"],

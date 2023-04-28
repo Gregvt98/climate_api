@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Request, Depends, Response, encoders, BackgroundTasks
 import typing as t
+from typing import Union
 
 from app.db.session import get_db
 from app.db.crud import (
@@ -27,12 +28,17 @@ posts_router = r = APIRouter()
 async def posts_list(
     response: Response,
     db=Depends(get_db),
+    limit: Union[int, None] = 100,
+    q: Union[str, None] = None,
     #current_user=Depends(get_current_active_superuser),
 ):
     """
     Get all posts
     """
-    posts = get_posts(db)
+    if q is None:
+        posts = get_posts(db, limit=limit)
+    elif q == "positive" or q == "negative":
+        posts = get_posts(db, limit=limit, q=q)
     # This is necessary for react-admin to work
     response.headers["Content-Range"] = f"0-9/{len(posts)}"
     return posts
