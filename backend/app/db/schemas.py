@@ -47,27 +47,13 @@ class TokenData(BaseModel):
 
 #schemas post
 
-class PostBase(BaseModel):
-    pass
-
-class PostOut(PostBase):
-    pass
-    #created_at: datetime
-    #updated_at: datetime
-
-
-class PostCreate(PostBase):
-    latitude: float
-    longitude: float
-    title: t.Optional[str] = None
-    content: t.Optional[str] = None
-    user_id: t.Optional[int] = None
+class SentimentAnalysisBase(BaseModel):
+    type: str
+    score: float
+    ratio: float
 
     class Config:
         orm_mode = True
-
-class SentimentAnalysisBase(BaseModel):
-    pass
 
 class SentimentAnalysisCreate(SentimentAnalysisBase):
     type: str
@@ -81,6 +67,9 @@ class SentimentAnalysisOut(SentimentAnalysisBase):
     class Config:
         orm_mode = True
 
+class PostBase(BaseModel):
+    pass
+
 class PostEdit(PostBase):
     title: t.Optional[str] = None
     content: t.Optional[str] = None
@@ -92,8 +81,25 @@ class PostEdit(PostBase):
 class Post(PostBase):
     id: int
     title: str
-    content: str
+    content: t.Optional[str] = None
     user_id: t.Optional[int]
+    #sentiment_analysis: t.Optional[SentimentAnalysisBase]
+
+    class Config:
+        orm_mode = True
+
+class PostOut(PostBase):
+   pass
+    #created_at: datetime
+    #updated_at: datetime
+
+
+class PostCreate(PostBase):
+    latitude: float
+    longitude: float
+    title: t.Optional[str] = None
+    content: t.Optional[str] = None
+    user_id: t.Optional[int] = None
 
     class Config:
         orm_mode = True
