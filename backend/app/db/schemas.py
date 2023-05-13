@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 import typing as t
+from datetime import datetime
+from typing import Set, Union
 
 #schemas user
 class UserBase(BaseModel):
@@ -9,97 +11,68 @@ class UserBase(BaseModel):
     first_name: str = None
     last_name: str = None
 
+    class Config:
+        orm_mode = True
 
 class UserOut(UserBase):
     pass
 
-
 class UserCreate(UserBase):
     password: str
-
-    class Config:
-        orm_mode = True
-
 
 class UserEdit(UserBase):
     password: t.Optional[str] = None
 
-    class Config:
-        orm_mode = True
-
-
 class User(UserBase):
     id: int
-
-    class Config:
-        orm_mode = True
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-
 class TokenData(BaseModel):
     email: str = None
     permissions: str = "user"
-
-
-#schemas post
-
 class SentimentAnalysisBase(BaseModel):
-    type: str
-    score: float
-    ratio: float
+    type: t.Optional[str]
+    score: t.Optional[float]
+    ratio: t.Optional[float]
 
     class Config:
         orm_mode = True
-
-class SentimentAnalysisCreate(SentimentAnalysisBase):
-    type: str
-    score: float
-    ratio: float
-
 
 class SentimentAnalysisOut(SentimentAnalysisBase):
     id: int
 
+class PostBase(BaseModel):
+    title: str
+    content: str
+    user_id: int
+
     class Config:
         orm_mode = True
-
-class PostBase(BaseModel):
-    pass
 
 class PostEdit(PostBase):
     title: t.Optional[str] = None
     content: t.Optional[str] = None
 
-    class Config:
-        orm_mode = True
-
-
 class Post(PostBase):
+    pass
+
+class PostOut(PostBase):
     id: int
     title: str
     content: t.Optional[str] = None
     user_id: t.Optional[int]
-    #sentiment_analysis: t.Optional[SentimentAnalysisBase]
-
-    class Config:
-        orm_mode = True
-
-class PostOut(PostBase):
-   pass
-    #created_at: datetime
-    #updated_at: datetime
-
+    longitude: float
+    latitude: float
+    created_at: datetime
+    sentiment_analysis: Union[SentimentAnalysisBase, None]
 
 class PostCreate(PostBase):
     latitude: float
     longitude: float
-    title: t.Optional[str] = None
-    content: t.Optional[str] = None
-    user_id: t.Optional[int] = None
-
-    class Config:
-        orm_mode = True
+    title: str
+    content: str
+    user_id: t.Optional[int]
