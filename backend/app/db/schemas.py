@@ -65,14 +65,16 @@ class PostOut(PostBase):
     title: str
     content: t.Optional[str] = None
     user_id: t.Optional[int]
+    user: UserOut
+    image_url: str
     longitude: float
     latitude: float
     created_at: datetime
-    sentiment_analysis: Union[SentimentAnalysisBase, None]
+    #sentiment_analysis: Union[SentimentAnalysisBase, None]
 
 class PostCreate(PostBase):
     latitude: float
     longitude: float
     title: str
     content: str
-    user_id: t.Optional[int]
+    user_id: t.Optional[int] = 0 # User ID = 0 is default (=anonymous)
