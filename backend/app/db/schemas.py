@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import typing as t
 from datetime import datetime
-from typing import Set, Union
+from typing import Set, Union, Dict
 
 #schemas user
 class UserBase(BaseModel):
@@ -13,9 +13,14 @@ class UserBase(BaseModel):
 
     class Config:
         orm_mode = True
+        #arbitrary_types_allowed = True
 
 class UserOut(UserBase):
     pass
+
+class UserHashedPassword(UserBase):
+    hashed_password: t.Optional[str] = None
+    id: int
 
 class UserCreate(UserBase):
     password: str
@@ -66,15 +71,45 @@ class PostOut(PostBase):
     content: t.Optional[str] = None
     user_id: t.Optional[int]
     user: UserOut
-    image_url: str
+    image_url: t.Optional[str]
     longitude: float
     latitude: float
     created_at: datetime
-    #sentiment_analysis: Union[SentimentAnalysisBase, None]
+    sentiment_analysis: SentimentAnalysisBase
 
 class PostCreate(PostBase):
     latitude: float
     longitude: float
     title: str
     content: str
-    user_id: t.Optional[int] = 0 # User ID = 0 is default (=anonymous)
+    user_id: int # User ID = 6 is anonymous
+
+class EventBase(BaseModel):
+    pass
+    class Config:
+        orm_mode = True
+        #arbitrary_types_allowed = True
+
+class EventCreate(EventBase):
+    log_level: str
+    ip_address: t.Optional[str]
+    user_agent: t.Optional[str]
+    event_type: str
+    event_data: t.Optional[Dict]
+    user_id:  t.Optional[int]
+
+class EventEdit(EventBase):
+    event_data: t.Optional[Dict]
+
+class EventOut(EventBase):
+    id: str
+    timestamp: datetime
+    event_type: str
+    log_level: str
+
+class CommentBase(BaseModel):
+    content: str
+    user_id: int
+
+class CommentCreate(CommentBase):
+    pass

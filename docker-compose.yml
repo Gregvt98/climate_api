@@ -12,6 +12,7 @@ services:
     environment:
       PYTHONPATH: .
       DATABASE_URL: 'postgresql://postgres:password@postgres:5432/postgres'
+      SA_API: 'e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6'
     ports:
       - "8000:8000"
     depends_on:

@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = "113d55fcbd3ba4d5053752c96b7a41ba479211a19cf4ec4144c24e1b124c43cf"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 3000 #purposely set a high expiration duration for testing, reset to 30 in production
 
 
 def get_password_hash(password: str) -> str:

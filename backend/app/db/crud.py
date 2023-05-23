@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 import typing as t
 import requests
+import json
 
 from . import models, schemas
 from app.core.security import get_password_hash
@@ -13,7 +14,7 @@ def get_user(db: Session, user_id: int):
     return user
 
 
-def get_user_by_email(db: Session, email: str) -> schemas.UserBase:
+def get_user_by_email(db: Session, email: str) -> schemas.UserHashedPassword:
     return db.query(models.User).filter(models.User.email == email).first()
 
 
@@ -88,20 +89,20 @@ def get_posts(
     db: Session, skip: int = 0, limit: int = 100, q: str = None
 ) -> t.List[schemas.PostOut]:
     if q is None:
-        return db.query(models.Post).offset(skip).limit(limit).all()
+        return db.query(models.Post).join(models.SentimentAnalysis).offset(skip).limit(limit).all()
     elif q == "positive" or q == "negative":
         ### if q is not empty, filter posts on sentiment positivity/negativity
         return db.query(models.Post).join(models.SentimentAnalysis).filter(models.SentimentAnalysis.type == q).offset(skip).limit(limit).all()
     else:
         raise HTTPException(status_code=404, detail="q parameter must be none, positive, or negative")
 
-def create_post(db: Session, post: schemas.PostCreate, user_id: int): #need to pass user id as well
+def create_post(db: Session, post: schemas.PostCreate): #need to pass user id as well
     #db_user = get_user(db, user_id) #get user with id
 
     db_post = models.Post(
         title=post.title,
         content=post.content,
-        user_id=user_id,
+        user_id=post.user_id,
         longitude=post.longitude,
         latitude=post.latitude,
     )
@@ -151,10 +152,12 @@ def get_sentiment(post_id, text):
 
 def create_sentiment_analysis(db: Session,  post_id: int):
     db_post = get_post(db, post_id)
-    if db_post.content:
-        res = get_sentiment(db_post.id, db_post.content)
+    if db_post.title and db_post.content:
+        res = get_sentiment(db_post.id, db_post.title + db_post.content)
     elif db_post.title:
         res = get_sentiment(db_post.id, db_post.title)
+    elif db_post.content:
+        res = get_sentiment(db_post.id, db_post.content)
     print("sentiment_analysis: ", res)
     db_sentiment_analysis = models.SentimentAnalysis(
         type=res["type"],
@@ -166,3 +169,49 @@ def create_sentiment_analysis(db: Session,  post_id: int):
     db.commit()
     db.refresh(db_sentiment_analysis)
     return db_sentiment_analysis
+
+def get_sentiment_analysis(db: Session, sentiment_id: int):
+    sentiment = db.query(models.SentimentAnalysis).filter(models.SentimentAnalysis.id == sentiment_id).first()
+    if not sentiment:
+        raise HTTPException(status_code=404, detail="Sentiment not found")
+    return sentiment
+
+def get_sentiment_analysis_by_post(db: Session, post_id: int):
+    sentiment = db.query(models.SentimentAnalysis).filter(models.SentimentAnalysis.post_id == post_id).first()
+    if not sentiment:
+        raise HTTPException(status_code=404, detail="Sentiment not found")
+    return sentiment
+
+def get_event(db: Session, event_id: int):
+    event = db.query(models.EventLog).filter(models.EventLog.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
+
+def create_event(db: Session, event: schemas.EventCreate, user_id: int):
+    json_data = json.dumps(event.event_data)
+    db_event = models.EventLog(
+        log_level = event.log_level,
+        ip_address = event.ip_address,
+        user_agent = event.user_agent,
+        event_type = event.event_type,
+        event_data = json_data,
+        user_id = user_id,
+    )
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+
+def create_comment(db: Session, comment: schemas.CommentCreate, post_id: int):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    db_comment = models.Comment(
+        content=comment.content,
+        post_id=post_id,
+        user_id=comment.user_id)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment

@@ -8,8 +8,9 @@ from app.db.crud import (
     create_user,
     delete_user,
     edit_user,
+    get_user_by_email,
 )
-from app.db.schemas import UserCreate, UserEdit, User, UserOut
+from app.db.schemas import UserCreate, UserEdit, User, UserHashedPassword
 from app.core.auth import get_current_active_user, get_current_active_superuser
 
 users_router = r = APIRouter()
@@ -41,6 +42,22 @@ async def user_me(current_user=Depends(get_current_active_user)):
     """
     return current_user
 
+@r.get(
+    "/users/email",
+    response_model=UserHashedPassword,
+    response_model_exclude_none=True,
+)
+async def user_email_details(
+    request: Request,
+    email: str,
+    db=Depends(get_db),
+    #current_user=Depends(get_current_active_superuser),
+):
+    """
+    Get user by email
+    """
+    user = get_user_by_email(db, email=email)
+    return user
 
 @r.get(
     "/users/{user_id}",
@@ -68,7 +85,7 @@ async def user_create(
     request: Request,
     user: UserCreate,
     db=Depends(get_db),
-    current_user=Depends(get_current_active_superuser),
+    #current_user=Depends(get_current_active_superuser),
 ):
     """
     Create a new user

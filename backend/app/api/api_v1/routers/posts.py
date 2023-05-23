@@ -12,9 +12,10 @@ from app.db.crud import (
     create_post,
     delete_post,
     edit_post,
-    create_sentiment_analysis
+    create_sentiment_analysis,
+    create_comment
 )
-from app.db.schemas import PostCreate, PostEdit, Post, PostOut
+from app.db.schemas import PostCreate, PostEdit, Post, PostOut, CommentCreate
 from app.core.auth import get_current_active_user, get_current_active_superuser
 
 posts_router = r = APIRouter()
@@ -22,7 +23,7 @@ posts_router = r = APIRouter()
 
 @r.get(
     "/posts",
-    response_model=t.List[Post],
+    response_model=t.List[PostOut],
     response_model_exclude_none=True,
 )
 async def posts_list(
@@ -34,8 +35,10 @@ async def posts_list(
 ):
     """
     Get all posts
+
+    Optional filter on sentiment positivity/negativity, and date created > to be added
     """
-    if q is None:
+    if q is None or q == "":
         posts = get_posts(db, limit=limit)
     elif q == "positive" or q == "negative":
         posts = get_posts(db, limit=limit, q=q)
@@ -79,12 +82,12 @@ async def post_create(
     post: PostCreate,
     background_tasks: BackgroundTasks,
     db=Depends(get_db),
-    current_user=Depends(get_current_active_user),
+    #current_user=Depends(get_current_active_user),
 ):
     """
     Create a new post
     """
-    created_post = create_post(db, post, current_user.id)
+    created_post = create_post(db, post)
     #background task to analyze sentiment after it's created
     background_tasks.add_task(create_sentiment_analysis, db, created_post.id)
     return created_post
@@ -119,3 +122,16 @@ async def post_delete(
     Delete existing post
     """
     return delete_post(db, post_id)
+
+@r.post("/posts/{post_id}/comments")
+async def post_comment(
+    post_id: int, 
+    comment: CommentCreate, 
+    db=Depends(get_db)
+    #current_user: User = Depends(get_current_user),
+):
+    """
+    Create a comment
+    """
+    return create_comment(db, comment, post_id)
+    
