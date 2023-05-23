@@ -8,4 +8,5 @@ SA_API = os.getenv("SA_API")
 
 API_V1_STR = "/api/v1"
 
-print(SA_API)
+#print(SQLALCHEMY_DATABASE_URI)
+#print(SA_API)

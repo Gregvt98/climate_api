@@ -6,6 +6,7 @@ import json
 
 from . import models, schemas
 from app.core.security import get_password_hash
+from app.core.config import SA_API
 
 def get_user(db: Session, user_id: int):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -142,7 +143,7 @@ def get_sentiment(post_id, text):
     querystring = {"text": text}
     headers = {
         "content-type": "application/octet-stream",
-        "X-RapidAPI-Key": "e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6", #hide key (use config.SA_API) of sentiment analysis API, 9000 free requests per month
+        "X-RapidAPI-Key": SA_API, #"e1aa69a1fdmsh97353a2245ac9ebp1f5715jsne703986c7ca6", #hide key (use config.SA_API) of sentiment analysis API, 9000 free requests per month
         "X-RapidAPI-Host": "twinword-sentiment-analysis.p.rapidapi.com",
     }
     response = requests.get(url, headers=headers, params=querystring)
