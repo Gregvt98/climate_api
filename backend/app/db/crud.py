@@ -106,6 +106,7 @@ def create_post(db: Session, post: schemas.PostCreate): #need to pass user id as
         user_id=post.user_id,
         longitude=post.longitude,
         latitude=post.latitude,
+        version=post.version,
     )
     db.add(db_post)
     db.commit()

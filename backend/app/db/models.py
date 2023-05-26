@@ -26,6 +26,7 @@ class Post(Base):
     content = Column(String)
     latitude = Column(Float)
     longitude = Column(Float)
+    version = Column(String)
     image_url = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

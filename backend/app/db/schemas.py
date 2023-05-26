@@ -80,9 +80,10 @@ class PostOut(PostBase):
 class PostCreate(PostBase):
     latitude: float
     longitude: float
+    version: t.Optional[str] = None
     title: str
     content: str
-    user_id: int # User ID = 6 is anonymous
+    user_id: int # User ID = 2 is anonymous
 
 class EventBase(BaseModel):
     pass
